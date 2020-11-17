@@ -19,12 +19,12 @@ typedef struct{
 } moment;
 
 typedef struct{
-    float m_z;
-    float m_x;
-    float m_y;
-} moment;
+    float f_z;
+    float f_x;
+    float f_y;
+} force;
 
 float get_RPM(int voltage, int duty_cycle);
 float get_force(int angular_velocity);
 float get_moment(int angular_velocity);
-moment get_moments(moment* moment, indiv_moments *ind_moment, indiv_forces *ind_forces);
+void get_moments(moment* moment, indiv_moments *ind_moment, indiv_forces *ind_forces);
