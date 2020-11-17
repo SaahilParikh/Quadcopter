@@ -1,0 +1,6 @@
+[submodule "src/software/buckler"]
+	path = src/software/buckler
+	url = https://github.com/lab11/buckler.git
+[submodule "src/buckler"]
+	path = src/buckler
+	url = https://github.com/lab11/buckler.git
