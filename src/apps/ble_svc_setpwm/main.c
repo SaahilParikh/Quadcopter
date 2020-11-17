@@ -64,7 +64,7 @@ void ble_evt_write(ble_evt_t const* p_ble_evt) {
       if (pwm_duty < 0) pwm_duty = 0;
       if (pwm_duty > 100) pwm_duty = 100;
       char buf[64];
-      snprintf(buf, sizeof(buf), "PWM: %d", pwm_duty);
+      snprintf(buf, sizeof(buf), "PWM: %d%%", pwm_duty);
       display_write(buf, DISPLAY_LINE_1);
       printf("New duty cycle: %d\n", pwm_duty);
       app_pwm_channel_duty_set(&PWM1, 0, pwm_duty);
@@ -81,7 +81,7 @@ int main(void) {
     .sck_pin = BUCKLER_LCD_SCLK,
     .mosi_pin = BUCKLER_LCD_MOSI,
     .miso_pin = BUCKLER_LCD_MISO,
-#include "nordic_common.h"    .ss_pin = BUCKLER_LCD_CS,
+    .ss_pin = BUCKLER_LCD_CS,
     .irq_priority = NRFX_SPI_DEFAULT_CONFIG_IRQ_PRIORITY,
     .orc = 0,
     .frequency = NRF_DRV_SPI_FREQ_4M,
