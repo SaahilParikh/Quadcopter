@@ -4,4 +4,4 @@ typedef struct{
     float y_axis;
 }tilts;
 
-static float read_tilt(void);
+static void read_tilt(tilts* tilt);
