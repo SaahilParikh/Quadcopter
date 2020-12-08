@@ -50,10 +50,10 @@ nrf_pwm_sequence_t const seq =
 
 void pwm_update_duty_cycle(uint8_t duty_cycle[4])
 {
-    seq_values->channel_0 = duty_cycle[0] >= 100 ? 100 : duty_cycle[0];
-    seq_values->channel_1 = duty_cycle[1] >= 100 ? 100 : duty_cycle[1];
-    seq_values->channel_2 = duty_cycle[2] >= 100 ? 100 : duty_cycle[2];
-    seq_values->channel_3 = duty_cycle[3] >= 100 ? 100 : duty_cycle[3];
+    seq_values->channel_0 = duty_cycle[0] >= 312 ? 312 : duty_cycle[0];
+    seq_values->channel_1 = duty_cycle[1] >= 312 ? 312 : duty_cycle[1];
+    seq_values->channel_2 = duty_cycle[2] >= 312 ? 312 : duty_cycle[2];
+    seq_values->channel_3 = duty_cycle[3] >= 312 ? 312 : duty_cycle[3];
 
     nrf_drv_pwm_simple_playback(&m_pwm0, &seq, 1, NRF_DRV_PWM_FLAG_LOOP);
 }
@@ -71,9 +71,9 @@ static void pwm_init(void)
             NRF_DRV_PWM_PIN_NOT_USED,             // channel 3
         },
         .irq_priority = APP_IRQ_PRIORITY_LOWEST,
-        .base_clock   = NRF_PWM_CLK_1MHz,
+        .base_clock   = NRF_PWM_CLK_125kHz,
         .count_mode   = NRF_PWM_MODE_UP,
-        .top_value    = 100,
+        .top_value    = 312,
         .load_mode    = NRF_PWM_LOAD_INDIVIDUAL,
         .step_mode    = NRF_PWM_STEP_AUTO
     };
@@ -109,32 +109,44 @@ int main(void) {
 
 
   // Setup LED GPIO
-  nrf_gpio_cfg_output(NRF_GPIO_PIN_MAP(0, 24));
-  nrf_gpio_cfg_output(NRF_GPIO_PIN_MAP(0, 25));
-
-
+  
+  nrf_delay_ms(5000);
   NRF_CLOCK->TASKS_HFCLKSTART = 1; 
 
   // Wait for clock to start
   while(NRF_CLOCK->EVENTS_HFCLKSTARTED == 0);
 
   pwm_init();
+  uint8_t up[] = {1, 3000, 10, 15};
 
-  uint8_t up[] = {0, 40, 80, 100};
+  for(int i = 0; i < 50; i++){
+    up[0] = 188;
+    pwm_update_duty_cycle(up);
+    nrf_delay_ms(50);
+  }
+
+  for(int i = 0; i < 50; i++){
+    up[0] = 253;
+    pwm_update_duty_cycle(up);
+    nrf_delay_ms(50);
+  }
+
   while(1) {
     // Start clock for accurate frequencies
+
       for(uint16_t i = 0; i <= 100; i++)
       {
-          nrf_delay_ms(10);
-          up[0] += 1;
+          nrf_delay_ms(500);
+          up[0] = 188 +(253 - 188)/100 *i ;
+          printf("%u, ", up[1]);
           up[1] += 1;
           up[2] += 1;
           up[3] += 1;
 
-          up[0] %= 100;
-          up[1] %= 100;
-          up[2] %= 100;
-          up[3] %= 100;
+          //up[0] %= 20;
+          up[1] %= 312;
+          up[2] %= 312;
+          up[3] %= 312;
 
 
           pwm_update_duty_cycle(up);
@@ -160,7 +172,7 @@ int main(void) {
 
 
 
-// Set duty cycle between 0 and 100%
+// Set duty cycle between 0 and 312%
 
 
 
