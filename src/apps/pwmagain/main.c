@@ -48,10 +48,10 @@ nrf_pwm_sequence_t const seq =
 
 
 
-void pwm_update_duty_cycle(uint16_t duty_cycle[4])
+void pwm_update_duty_cycle(uint8_t duty_cycle[4])
 {
-    seq_values->channel_0 = (duty_cycle[0] >= 312 ? 312 : duty_cycle[0])  | (1 << 15);
-    seq_values->channel_1 = (duty_cycle[1] >= 312 ? 312 : duty_cycle[1]) | (1 << 15);
+    seq_values->channel_0 = duty_cycle[0] >= 312 ? 312 : duty_cycle[0];
+    seq_values->channel_1 = duty_cycle[1] >= 312 ? 312 : duty_cycle[1];
     seq_values->channel_2 = duty_cycle[2] >= 312 ? 312 : duty_cycle[2];
     seq_values->channel_3 = duty_cycle[3] >= 312 ? 312 : duty_cycle[3];
 
@@ -117,28 +117,28 @@ int main(void) {
   while(NRF_CLOCK->EVENTS_HFCLKSTARTED == 0);
 
   pwm_init();
-  uint16_t up[] = {1,10, 10, 15};
+  uint8_t up[] = {1, 3000, 10, 15};
 
   for(int i = 0; i < 50; i++){
-    up[0] = 100;
+    up[0] = 188;
     pwm_update_duty_cycle(up);
     nrf_delay_ms(50);
   }
 
-  // for(int i = 0; i < 50; i++){
-  //   up[0] = 253;
-  //   pwm_update_duty_cycle(up);
-  //   nrf_delay_ms(50);
-  // }
+  for(int i = 0; i < 50; i++){
+    up[0] = 253;
+    pwm_update_duty_cycle(up);
+    nrf_delay_ms(50);
+  }
 
   while(1) {
     // Start clock for accurate frequencies
 
-      for(uint16_t i = 0; i <= 130; i++)
+      for(uint16_t i = 0; i <= 100; i++)
       {
-          nrf_delay_ms(7000);
-          up[0] = 220 + i;
-          printf("%u, ", up[0]);
+          nrf_delay_ms(500);
+          up[0] = 188 +(253 - 188)/100 *i ;
+          printf("%u, ", up[1]);
           up[1] += 1;
           up[2] += 1;
           up[3] += 1;

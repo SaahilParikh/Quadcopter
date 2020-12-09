@@ -1,4 +1,4 @@
-
+/*
 typedef enum{
     start,
     fly,
@@ -8,8 +8,9 @@ typedef enum{
 command listen_for_command() {
     /*implement ble listing for command*/
     /*for now just return fly*/
-    return fly;
+/*    return fly;
 }
+
 
 command curr_command;
 int main() {
@@ -20,7 +21,7 @@ int main() {
             case start:
             /** start motors**/
             /** fly upwards w stabilization stuff*/
-            break;
+ /*           break;
             case fly:
 
             break;
@@ -30,3 +31,4 @@ int main() {
         }
     }
 }
+*/

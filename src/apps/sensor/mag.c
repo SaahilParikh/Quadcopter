@@ -58,7 +58,7 @@ void init_mag(void) {
 		valy = MEDIANFILTER_Insert(&medianFilterMagY, init_mag.y_axis);
 		valz = MEDIANFILTER_Insert(&medianFilterMagZ, init_mag.z_axis);
 	}
-	initial_yaw = atan2(valx, valy);
+	initial_yaw = atan2(valy, valy);
 	initial_pitch = atan2(valx, sqrt(pow(valz, 2) + pow(valy, 2)));
 	initial_roll = atan2(valy, sqrt(pow(valz, 2) + pow(valx, 2)));
 

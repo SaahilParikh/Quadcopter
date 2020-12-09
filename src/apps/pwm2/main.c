@@ -50,7 +50,7 @@ int main(void) {
   pwm_init_two(&PWM2, NRF_GPIO_PIN_MAP(0, 24), NRF_GPIO_PIN_MAP(0, 25), pwm_ready_callback);
 
   while(1) {
-
+    printf("%lu", NRF_GPIO_PIN_MAP(0, 31));
     //update_pwm(&PWMLED1, 0, 90);
   //   printf("led 0 %x", BUCKLER_LED0);
   // printf("Converter: %X", NRF_GPIO_PIN_MAP(0, 25));
