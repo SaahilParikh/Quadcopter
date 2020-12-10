@@ -29,7 +29,7 @@ nrf_saadc_value_t sample_accel_value (uint8_t channel) {
 	for(int i = 0; i < NUM_ELEMENTS; i++) {
 		ret_code_t error_code = nrfx_saadc_sample_convert(channel, &val);
 		APP_ERROR_CHECK(error_code);
-		val = MEDIANFILTER_Insert(&medianFilter, val);
+		val = MEDIANFILTER_Insert(&medianFilter, (float) val);
 	}
 	return val;
 }

@@ -1,8 +1,4 @@
 
-
-
-
-
 typedef struct {
 	float yaw;
 	float pitch;
