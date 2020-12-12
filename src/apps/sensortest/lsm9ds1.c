@@ -447,9 +447,9 @@ lsm9ds1_measurement_t lsm9ds1_read_accelerometer() {
   return meas;
 }
 
-#define gx_bias (41)
-#define gy_bias (161)
-#define gz_bias (-29)
+#define gx_bias (52)
+#define gy_bias (45)
+#define gz_bias (130)
 
 lsm9ds1_measurement_t lsm9ds1_read_gyro() {
   uint8_t temp[6];
@@ -473,26 +473,6 @@ lsm9ds1_measurement_t lsm9ds1_read_gyro() {
   meas.z_axis = gz* gRes;
   return meas;
 }
-
-void gyrocalibrationtool(){
-  int16_t gx, gy, gz;
-  int32_t gyros[] = {0, 0, 0}; 
-  for(int i = 0; i < 100000; i++){
-    uint8_t temp[6];
-    lsm9ds1_measurement_t meas = {0};
-
-    i2c_read_bytes(settings.device.agAddress, OUT_X_L_G, temp, 6);
-
-    gx = (temp[1] << 8) | temp[0]; // Store x-axis values into gx
-    gy = (temp[3] << 8) | temp[2]; // Store y-axis values into gy
-    gz = (temp[5] << 8) | temp[4]; // Store z-axis values into gz
-    gyros[0] += gx;
-    gyros[1] += gy;
-    gyros[2] += gz;
-  }
-  printf("(%d, %d, %d)\n", gyros[0]/100000, gyros[1]/100000, gyros[2]/100000);
-}
-
 
 lsm9ds1_measurement_t lsm9ds1_read_magnetometer()  {
   uint8_t temp[6]; // We'll read six bytes from the mag into temp
@@ -551,9 +531,9 @@ lsm9ds1_measurement_t lsm9ds1_read_gyro_integration() {
 #include "accel.h"
 #include "mag.h"
 
-#define GYRO_W  0.995
-#define ACCEL_W 0.005
-#define MAG_W 0.000
+#define GYRO_W  0.98
+#define ACCEL_W 0.01
+#define MAG_W 0.01
 
 void get_orientation(orientation_data* orientation) {
   get_accel_angles(orientation->accel_d);

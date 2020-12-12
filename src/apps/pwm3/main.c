@@ -32,54 +32,8 @@
 
 #include "nrf_delay.h"
 
+#include "nrfx_gpiote.h"
 
-
-static nrf_drv_pwm_t m_pwm0 = NRF_DRV_PWM_INSTANCE(0);
-
-nrf_pwm_values_individual_t seq_values[] = {0, 0, 0, 0};
-
-nrf_pwm_sequence_t const seq =
-{
-    .values.p_common = seq_values,
-    .length          = NRF_PWM_VALUES_LENGTH(seq_values),
-    .repeats         = 0,
-    .end_delay       = 0
-};
-
-
-
-void pwm_update_duty_cycle(uint16_t duty_cycle[4])
-{
-    seq_values->channel_0 = (duty_cycle[0] >= 312 ? 312 : duty_cycle[0])  | (1 << 15);
-    seq_values->channel_1 = (duty_cycle[1] >= 312 ? 312 : duty_cycle[1]) | (1 << 15);
-    seq_values->channel_2 = duty_cycle[2] >= 312 ? 312 : duty_cycle[2];
-    seq_values->channel_3 = duty_cycle[3] >= 312 ? 312 : duty_cycle[3];
-
-    nrf_drv_pwm_simple_playback(&m_pwm0, &seq, 1, NRF_DRV_PWM_FLAG_LOOP);
-}
-
-
-static void pwm_init(void)
-{
-    nrf_drv_pwm_config_t const config0 =
-    {
-        .output_pins =
-        {
-            NRF_GPIO_PIN_MAP(0, 25), // channel 0
-            NRF_GPIO_PIN_MAP(0, 24),             // channel 1
-            NRF_GPIO_PIN_MAP(0, 23),             // channel 2
-            NRF_DRV_PWM_PIN_NOT_USED,             // channel 3
-        },
-        .irq_priority = APP_IRQ_PRIORITY_LOWEST,
-        .base_clock   = NRF_PWM_CLK_125kHz,
-        .count_mode   = NRF_PWM_MODE_UP,
-        .top_value    = 312,
-        .load_mode    = NRF_PWM_LOAD_INDIVIDUAL,
-        .step_mode    = NRF_PWM_STEP_AUTO
-    };
-    // Init PWM without error handler
-    APP_ERROR_CHECK(nrf_drv_pwm_init(&m_pwm0, &config0, NULL));
-}
 
 
 
@@ -117,7 +71,7 @@ int main(void) {
   while(NRF_CLOCK->EVENTS_HFCLKSTARTED == 0);
 
   pwm_init();
-  uint16_t up[] = {1,10, 10, 15};
+  uint16_t up[] = {0, 0, 0, 0};
 
   for(int i = 0; i < 50; i++){
     up[0] = 100;
@@ -125,25 +79,33 @@ int main(void) {
     nrf_delay_ms(50);
   }
 
+  up[0] = 0;
+
   // for(int i = 0; i < 50; i++){
   //   up[0] = 253;
   //   pwm_update_duty_cycle(up);
   //   nrf_delay_ms(50);
   // }
 
+  nrf_gpio_cfg_output(5);
+  nrf_gpio_cfg_output(6);
+
   while(1) {
     // Start clock for accurate frequencies
 
       for(uint16_t i = 0; i <= 130; i++)
       {
-          nrf_delay_ms(7000);
-          up[0] = 220 + i;
-          printf("%u, ", up[0]);
+          //nrf_gpio_pin_toggle(NRF_GPIO_PIN_MAP(0, 22));
+          nrf_delay_ms(2);
+
+          up[0] += 1;
+          //printf("%u, ", up[0]);
           up[1] += 1;
           up[2] += 1;
           up[3] += 1;
 
-          //up[0] %= 20;
+
+          up[0] %= 312;
           up[1] %= 312;
           up[2] %= 312;
           up[3] %= 312;

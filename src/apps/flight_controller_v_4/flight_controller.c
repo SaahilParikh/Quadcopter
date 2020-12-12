@@ -26,14 +26,31 @@ PID_Controller pitch_velocity;
 PID_Controller roll_velocity;
 PID_Controller yaw_velocity;
 
+// Controller_Constants ang_d_stab_pitch[] = {3.2, 0.4, 0.0};
+// Controller_Constants ang_d_stab_roll[] = {2.9, 0.000, 0.0};
+// Controller_Constants ang_d_stab_yaw[] = {2.3, 0.000, 0.0};
 
-Controller_Constants ang_d_stab_pitch[] = {1.0, 0.000, 0.0};
-Controller_Constants ang_d_stab_roll[] = {1.0, 0.000, 0.0};
-Controller_Constants ang_d_stab_yaw[] = {1.0, 0.000, 0.0};
+// Controller_Constants ang_v_stab_pitch[] = {1.5, 0.000, 0.000};
+// Controller_Constants ang_v_stab_roll[] = {1.0, 0.000, 0.000};
+// Controller_Constants ang_v_stab_yaw[] = {1.0, 0.00, 0.0};
 
-Controller_Constants ang_v_stab_pitch[] = {1.0, 0.000, 0.0};
-Controller_Constants ang_v_stab_roll[] = {1.0, 0.000, 0.0};
-Controller_Constants ang_v_stab_yaw[] = {1.0, 0.000, 0.0};
+
+// Controller_Constants ang_d_stab_pitch[] = {3.2, 0.0, 0.0};
+// Controller_Constants ang_d_stab_roll[] = {3.2, 0.000, 0.0};
+// Controller_Constants ang_d_stab_yaw[] = {2.3, 0.000, 0.0};
+
+// Controller_Constants ang_v_stab_pitch[] = {2.2, 0.0, 0.000};
+// Controller_Constants ang_v_stab_roll[] = {2.2, 0.00, 0.000};
+// Controller_Constants ang_v_stab_yaw[] = {1.0, 0.00, 0.0};
+
+Controller_Constants ang_d_stab_pitch[] = {2.3, 0.0, 0.0};
+Controller_Constants ang_d_stab_roll[] = {2.3, 0.000, 0.0};
+Controller_Constants ang_d_stab_yaw[] = {1.4, 0.000, 0.0};
+
+Controller_Constants ang_v_stab_pitch[] = {1.4, 0.0, 0.000};
+Controller_Constants ang_v_stab_roll[] = {1.4, 0.00, 0.000};
+Controller_Constants ang_v_stab_yaw[] = {1.0, 0.00, 0.0};
+
 
 uint16_t current_pwm[] = {0, 0, 0, 0};
 
@@ -59,47 +76,37 @@ void init_sensors(){
 	current_orient.mag_d = &mag_d;
 	current_orient.accel_d = &accel_d;
 
-	lsm9ds1_start_gyro_integration();
+	
 }
 
 
 
 void init_flight_controller() {
 	
-	init_controller(&pitch_displacement, ang_d_stab_pitch, 0.02, 100);
+	init_controller(&pitch_displacement, ang_d_stab_pitch, 0.004, 50);
 	update_target(&pitch_displacement, 0);
 
 	
-	init_controller(&roll_displacement, ang_d_stab_roll, 0.02, 100);
+	init_controller(&roll_displacement, ang_d_stab_roll, 0.004, 30);
 	update_target(&roll_displacement, 0);
 
 	
-	init_controller(&yaw_displacement, ang_d_stab_yaw, 0.02, 100);
+	init_controller(&yaw_displacement, ang_d_stab_yaw, 0.004, 30);
 	update_target(&yaw_displacement, 0);
 
 	
-	init_controller(&pitch_velocity, ang_v_stab_pitch, 0.02, 100);
+	init_controller(&pitch_velocity, ang_v_stab_pitch, 0.004, 30);
 	update_target(&pitch_velocity, 0);
 
 	
-	init_controller(&roll_velocity, ang_v_stab_roll, 0.02, 100);
+	init_controller(&roll_velocity, ang_v_stab_roll, 0.004, 20);
 	update_target(&roll_velocity, 0);
 
 	
-	init_controller(&yaw_velocity, ang_v_stab_yaw, 0.02, 100);
+	init_controller(&yaw_velocity, ang_v_stab_yaw, 0.004, 10);
 	update_target(&yaw_velocity, 0);
 
-	//start sensors
-	init_sensors();
-
-
-	//start pwm
-	NRF_CLOCK->TASKS_HFCLKSTART = 1; 
-
-	// Wait for clock to start
-	while(NRF_CLOCK->EVENTS_HFCLKSTARTED == 0);
-
-	pwm_init();
+	
 	return;
 }
 
@@ -116,11 +123,25 @@ void spam_pwm(uint16_t spam[4]) {
 }
 
 void arm() {
+	//start sensors
+	init_sensors();
+
+
+	//start pwm
+	NRF_CLOCK->TASKS_HFCLKSTART = 1; 
+
+	// Wait for clock to start
+	while(NRF_CLOCK->EVENTS_HFCLKSTARTED == 0);
+
+	pwm_init();
+
+	lsm9ds1_start_gyro_integration();
 	spam_pwm(arming_pwm);
 	return;
 }
 
 void kill() {
+	lsm9ds1_stop_gyro_integration();
 	spam_pwm(kill_pwm);
 	return;
 }
@@ -161,7 +182,8 @@ typedef struct {
 	float yaw;
 }	angles_t;
 
-#define	PWM_MIN	121
+#define	PWM_MIN	115
+#define	PWM_MAX	270
 
 void fly() {
 	float u_ang_v[3];
@@ -173,12 +195,19 @@ void fly() {
 	get_target_pwm(output_pwm, u_ang_v, u_ang_d);
 	get_include_z_pwm(output_pwm);
 
-	current_pwm[0] = (uint16_t) round(output_pwm[0]) + PWM_MIN;
-	current_pwm[1] = (uint16_t) round(output_pwm[1]) + PWM_MIN;
-	current_pwm[2] = (uint16_t) round(output_pwm[2]) + PWM_MIN;
-	current_pwm[3] = (uint16_t) round(output_pwm[3]) + PWM_MIN;
+	current_pwm[0] = ((uint16_t) round(output_pwm[0]) + PWM_MIN) > PWM_MAX ? PWM_MAX : (uint16_t) round(output_pwm[0]) + PWM_MIN;
+	current_pwm[1] = ((uint16_t) round(output_pwm[1]) + PWM_MIN) > PWM_MAX ? PWM_MAX : (uint16_t) round(output_pwm[1]) + PWM_MIN;
+	current_pwm[2] = ((uint16_t) round(output_pwm[2]) + PWM_MIN) > PWM_MAX ? PWM_MAX : (uint16_t) round(output_pwm[2]) + PWM_MIN;
+	current_pwm[3] = ((uint16_t) round(output_pwm[3]) + PWM_MIN) > PWM_MAX ? PWM_MAX : (uint16_t) round(output_pwm[3]) + PWM_MIN;
 
-	printf("d(%u, %u, %u, %u)\t", current_pwm[0], current_pwm[1], current_pwm[2], current_pwm[3]);
+	//  printf("gd(%f, %f, %f)\t", gyro_d.x_axis, gyro_d.y_axis, gyro_d.z_axis);
+	// // // printf("gd(%f)\t", pitch_velocity.integral);
+	// // // //printf("gd(%f, %f, %f, %f)\t", output_pwm[3], output_pwm[2], output_pwm[1], output_pwm[0]);
+	// // // // printf("gv(%f, %f, %f)\t", gyro_v.x_axis, gyro_v.y_axis, gyro_v.z_axis);
+	//   printf("a(%f, %f, %f)\t", accel_d.theta, accel_d.psi, accel_d.phi);
+	// // // printf("m(%f, %f, %f)\t", mag_d.roll, mag_d.pitch, mag_d.yaw);
+	//  printf("d(%u, %u, %u, %u)\n", current_pwm[3], current_pwm[2], current_pwm[1], current_pwm[0]);
+
 
 	pwm_update_duty_cycle(current_pwm);
 	return;
@@ -188,7 +217,7 @@ void fly() {
 #define KROLL	1
 #define KPITCH	1
 #define KYAW	1
-#define COPTER_MASS	400
+#define COPTER_MASS 540
 
 
 void get_target_pwm(motor_pwm_t* new_pwm, angles_t* error_v, angles_t* error_d){
@@ -214,7 +243,6 @@ void get_include_z_pwm(motor_pwm_t* add_z) {
 	float total_thrust_curr = sqrt(rf_f*rf_f + lf_f*lf_f + lb_f*lb_f + rb_f*rb_f);
 
 	float thrust_needed_in_z = COPTER_MASS / (cos(gyro_d.x_axis/57.29577) * cos(gyro_d.y_axis/57.29577));
-	printf("(%f, %f, %f)\n", total_thrust_curr, thrust_needed_in_z, rf_f);
 	float thrust_left_per_motor = (thrust_needed_in_z - total_thrust_curr)/4;
 	float pwm_needed_per_motor = FORCE_TO_PWM(thrust_left_per_motor);
 	add_z->RF += pwm_needed_per_motor;

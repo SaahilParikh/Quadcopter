@@ -48,10 +48,11 @@ int main (void) {
 
   nrf_delay_ms(2000);
 
-  for(int i = 0; i < 5000; i++){
-    fly();
-    nrf_delay_ms(2);
-  }
+  for(int i = 0; i < 6000; i++){
+     fly();
+     printf("(%f, %f, %f)\n", gyro_d.x_axis, gyro_d.y_axis, gyro_d.z_axis);
+     nrf_delay_ms(2);
+   }
 
   kill();
   printf("(dead)\n" );

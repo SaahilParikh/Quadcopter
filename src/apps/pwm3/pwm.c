@@ -11,34 +11,61 @@
 #include "app_pwm.h"
 
 #include "buckler.h"
+#include "nrf_drv_pwm.h"
+#include "app_util_platform.h"
+#include "app_error.h"
+#include "boards.h"
+#include "bsp.h"
+#include "nrf_drv_clock.h"
+#include "nrf_delay.h"
+#include "pwm.h"
 
-void pwm_ready_callback(uint32_t pwm_id)    // PWM callback function
+
+//Modified from example//
+static nrf_drv_pwm_t m_pwm0 = NRF_DRV_PWM_INSTANCE(0);
+
+nrf_pwm_values_individual_t seq_values[] = {0, 0, 0, 0};
+
+nrf_pwm_sequence_t const seq =
 {
-    printf("Duty Change");
-}
+    .values.p_common = seq_values,
+    .length          = NRF_PWM_VALUES_LENGTH(seq_values),
+    .repeats         = 0,
+    .end_delay       = 0
+};
 
-void pwm_init_two(app_pwm_t const * const p_instance, uint32_t pin1, uint32_t pin2, app_pwm_callback_t p_ready_callback) {
-  app_pwm_config_t pwm_cfg = APP_PWM_DEFAULT_CONFIG_2CH(20000, pin1, pin2);
-  int err_code = app_pwm_init(p_instance, &pwm_cfg, p_ready_callback);
 
-  APP_ERROR_CHECK(err_code);
+void pwm_update_duty_cycle(uint16_t duty_cycle[4])
+{
+    seq_values->channel_0 = (duty_cycle[0] >= 312 ? 312 : duty_cycle[0]) | (1 << 15);
+    seq_values->channel_1 = (duty_cycle[1] >= 312 ? 312 : duty_cycle[1]) | (1 << 15);
+    seq_values->channel_2 = (duty_cycle[2] >= 312 ? 312 : duty_cycle[2]) | (1 << 15);
+    seq_values->channel_3 = (duty_cycle[3] >= 312 ? 312 : duty_cycle[3]) | (1 << 15);
 
-  app_pwm_enable(p_instance);
-}
-
-void pwm_init_one(app_pwm_t const * const p_instance, uint32_t pin, app_pwm_callback_t p_ready_callback) {
-  app_pwm_config_t pwm_cfg = APP_PWM_DEFAULT_CONFIG_1CH(20000, pin);
-  int err_code = app_pwm_init(p_instance, &pwm_cfg, p_ready_callback);
-
-  APP_ERROR_CHECK(err_code);
-
-  app_pwm_enable(p_instance);
+    nrf_drv_pwm_simple_playback(&m_pwm0, &seq, 1, NRF_DRV_PWM_FLAG_LOOP);
 }
 
 
-ret_code_t update_pwm(app_pwm_t const * const p_instance, uint8_t channel, app_pwm_duty_t pwm_duty){
-  if (!app_pwm_busy_check(p_instance)){
-    return app_pwm_channel_duty_set(p_instance, channel, pwm_duty);
-  }
-  return false;
+void pwm_init(void)
+{
+    nrf_drv_pwm_config_t const config0 =
+    {
+        .output_pins =
+        {
+            NRF_GPIO_PIN_MAP(0, 23), // channel 0
+            NRF_GPIO_PIN_MAP(0, 6),             // channel 1
+            NRF_GPIO_PIN_MAP(0, 5),             // channel 2
+            NRF_GPIO_PIN_MAP(0, 25),             // channel 3
+        },
+        .irq_priority = APP_IRQ_PRIORITY_LOWEST,
+        .base_clock   = NRF_PWM_CLK_125kHz,
+        .count_mode   = NRF_PWM_MODE_UP,
+        .top_value    = 312,
+        .load_mode    = NRF_PWM_LOAD_INDIVIDUAL,
+        .step_mode    = NRF_PWM_STEP_AUTO
+    };
+    // Init PWM without error handler
+    APP_ERROR_CHECK(nrf_drv_pwm_init(&m_pwm0, &config0, NULL));
 }
+
+

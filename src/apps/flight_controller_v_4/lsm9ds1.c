@@ -447,9 +447,9 @@ lsm9ds1_measurement_t lsm9ds1_read_accelerometer() {
   return meas;
 }
 
-#define gx_bias (41)
-#define gy_bias (161)
-#define gz_bias (-29)
+#define gx_bias (60)
+#define gy_bias (93)
+#define gz_bias (79)
 
 lsm9ds1_measurement_t lsm9ds1_read_gyro() {
   uint8_t temp[6];
@@ -551,13 +551,13 @@ lsm9ds1_measurement_t lsm9ds1_read_gyro_integration() {
 #include "accel.h"
 #include "mag.h"
 
-#define GYRO_W  0.995
-#define ACCEL_W 0.005
+#define GYRO_W  0.99999
+#define ACCEL_W 0.00001
 #define MAG_W 0.000
 
 void get_orientation(orientation_data* orientation) {
   get_accel_angles(orientation->accel_d);
-  get_mag(orientation->mag_d);
+  //get_mag(orientation->mag_d);
 
   uint32_t curr_timer_val = nrfx_timer_capture(&gyro_timer, NRF_TIMER_CC_CHANNEL0);
   float time_diff = ((float)(curr_timer_val - prev_timer_val))/1000000.0;
@@ -567,10 +567,10 @@ void get_orientation(orientation_data* orientation) {
     integrated_angle.z_axis = 1 * (integrated_angle.z_axis + orientation->gyro_v->z_axis*time_diff); //+ 0.02 * magang.yaw;
   }
   if (orientation->gyro_v->x_axis > 0.5 || orientation->gyro_v->x_axis < -0.5) {
-    integrated_angle.x_axis = GYRO_W * (integrated_angle.x_axis + orientation->gyro_v->x_axis*time_diff) + ACCEL_W * orientation->accel_d->theta + MAG_W * orientation->mag_d->roll;
+    integrated_angle.x_axis = GYRO_W * (integrated_angle.x_axis + orientation->gyro_v->x_axis*time_diff) + ACCEL_W * orientation->accel_d->theta;// + MAG_W * orientation->mag_d->roll;
   }
   if (orientation->gyro_v->y_axis > 0.5 || orientation->gyro_v->y_axis < -0.5) {
-    integrated_angle.y_axis = GYRO_W * (integrated_angle.y_axis + orientation->gyro_v->y_axis*time_diff) + ACCEL_W * orientation->accel_d->psi + MAG_W * orientation->mag_d->pitch;
+    integrated_angle.y_axis = GYRO_W * (integrated_angle.y_axis + orientation->gyro_v->y_axis*time_diff) + ACCEL_W * orientation->accel_d->psi;// + MAG_W * orientation->mag_d->pitch;
   }
 
   *(orientation->gyro_d) = integrated_angle;

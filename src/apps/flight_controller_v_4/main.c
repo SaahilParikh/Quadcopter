@@ -39,24 +39,34 @@ int main (void) {
   error_code = NRF_LOG_INIT(NULL);
   APP_ERROR_CHECK(error_code);
   NRF_LOG_DEFAULT_BACKENDS_INIT();
-
+  
+  
   init_flight_controller();
 
   nrf_delay_ms(2000);
 
   arm();
 
-  nrf_delay_ms(2000);
+  
+  for(int i = 0; i < 1000; i++){
+     get_orientation(&current_orient);
+     nrf_delay_ms(1);
+
+   }
+
+
 
   for(int i = 0; i < 5000; i++){
-    fly();
-    nrf_delay_ms(2);
-  }
+     fly();
+     nrf_delay_us(500);
+   }
 
   kill();
   printf("(dead)\n" );
 
   nrf_delay_ms(1000);
+
+
     
   
 }

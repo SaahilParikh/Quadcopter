@@ -178,7 +178,7 @@ void fly() {
 	current_pwm[2] = (uint16_t) round(output_pwm[2]) + PWM_MIN;
 	current_pwm[3] = (uint16_t) round(output_pwm[3]) + PWM_MIN;
 
-	printf("d(%u, %u, %u, %u)\t", current_pwm[0], current_pwm[1], current_pwm[2], current_pwm[3]);
+	//printf("d(%u, %u, %u, %u)\n", current_pwm[0], current_pwm[1], current_pwm[2], current_pwm[3]);
 
 	pwm_update_duty_cycle(current_pwm);
 	return;
@@ -188,7 +188,7 @@ void fly() {
 #define KROLL	1
 #define KPITCH	1
 #define KYAW	1
-#define COPTER_MASS	400
+#define COPTER_MASS 800
 
 
 void get_target_pwm(motor_pwm_t* new_pwm, angles_t* error_v, angles_t* error_d){
@@ -214,7 +214,6 @@ void get_include_z_pwm(motor_pwm_t* add_z) {
 	float total_thrust_curr = sqrt(rf_f*rf_f + lf_f*lf_f + lb_f*lb_f + rb_f*rb_f);
 
 	float thrust_needed_in_z = COPTER_MASS / (cos(gyro_d.x_axis/57.29577) * cos(gyro_d.y_axis/57.29577));
-	printf("(%f, %f, %f)\n", total_thrust_curr, thrust_needed_in_z, rf_f);
 	float thrust_left_per_motor = (thrust_needed_in_z - total_thrust_curr)/4;
 	float pwm_needed_per_motor = FORCE_TO_PWM(thrust_left_per_motor);
 	add_z->RF += pwm_needed_per_motor;

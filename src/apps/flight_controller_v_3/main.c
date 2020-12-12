@@ -39,6 +39,7 @@ int main (void) {
   error_code = NRF_LOG_INIT(NULL);
   APP_ERROR_CHECK(error_code);
   NRF_LOG_DEFAULT_BACKENDS_INIT();
+  
 
   init_flight_controller();
 
@@ -48,9 +49,9 @@ int main (void) {
 
   nrf_delay_ms(2000);
 
-  for(int i = 0; i < 1000; i++){
+  for(int i = 0; i < 2000; i++){
      fly();
-     nrf_delay_ms(2);
+     nrf_delay_us(1);
    }
 
   kill();
