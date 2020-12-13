@@ -6,14 +6,8 @@ import os
 import atexit
 import struct
 from bluepy.btle import Peripheral, DefaultDelegate
-import argparse
 
-parser = argparse.ArgumentParser(description='Print advertisement data from a BLE device')
-parser.add_argument('addr', metavar='A', type=str, help='Address of the form XX:XX:XX:XX:XX:XX')
-args = parser.parse_args()
-addr = args.addr.lower()
-if len(addr) != 17:
-    raise ValueError("Invalid address supplied")
+addr =  "c0:98:e5:49:12:34"
 DISPLAY_SERVICE_UUID = "62295813-af1c-3eb5-4a07-c92f9053c5c5"
 DISPLAY_CHAR_UUID    = "6229108a-af1c-3eb5-4a07-c92f9053c5c5"
 
