@@ -53,23 +53,38 @@ int main(void) {
 
   init_ble();
 
+  bool sensors_initialized = false;
+
   while(1) {
+    if (sensors_initialized) {
+      get_orientation(&current_orient);
+    }
     enum Buttons b = button_state;
     switch (b) {
       case NONE:
-      //TODO
+        update_target(&pitch_displacement, 0);
+        update_target(&roll_displacement, 0);
+        update_target(&yaw_displacement, 0);
       break;
       case RLEFT:
-      //TODO
+        update_target(&pitch_displacement, 0);
+        update_target(&roll_displacement, 5);
+        update_target(&yaw_displacement, 0);
       break;
       case RRIGHT:
-      //TODO
+        update_target(&pitch_displacement, 0);
+        update_target(&roll_displacement, -5);
+        update_target(&yaw_displacement, 0);
       break;
       case PFWD:
-      //TODO
+        update_target(&pitch_displacement, 5);
+        update_target(&roll_displacement, 0);
+        update_target(&yaw_displacement, 0);
       break;
       case PBACK:
-      //TODO
+        update_target(&pitch_displacement, -5);
+        update_target(&roll_displacement, 0);
+        update_target(&yaw_displacement, 0);
       break;
       case YLEFT:
       //TODO
@@ -86,6 +101,7 @@ int main(void) {
       case ARM:
         if (prev_state == NONE) {
           arm();
+          sensors_initialized = true;
         }
       break;
       case INIT:

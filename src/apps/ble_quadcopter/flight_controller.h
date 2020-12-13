@@ -3,6 +3,7 @@
 #include "mag.h"
 #include "lsm9ds1.h"
 #include "accel.h"
+#include "pid.h"
 
 // SETUP FOR SENSORS
 orientation_data current_orient;
@@ -14,6 +15,14 @@ lsm9ds1_measurement_t gyro_d;
 // END OF SENSORS SET UP
 
 #define pwm_update_rate 2
+
+extern PID_Controller pitch_displacement;
+extern PID_Controller roll_displacement;
+extern PID_Controller yaw_displacement;
+
+extern PID_Controller pitch_velocity;
+extern PID_Controller roll_velocity;
+extern PID_Controller yaw_velocity;
 
 void init_sensors(void);
 void init_flight_controller(void);

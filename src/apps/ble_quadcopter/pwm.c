@@ -35,7 +35,7 @@ nrf_pwm_sequence_t const seq =
 };
 
 
-void pwm_update_duty_cycle(uint16_t duty_cycle[4])
+void pwm_update_duty_cycle(const uint16_t duty_cycle[4])
 {
     seq_values->channel_0 = (duty_cycle[0] >= 312 ? 312 : duty_cycle[0])  | (1 << 15);
     seq_values->channel_1 = (duty_cycle[1] >= 312 ? 312 : duty_cycle[1]) | (1 << 15);

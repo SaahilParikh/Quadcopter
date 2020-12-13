@@ -17,6 +17,29 @@ const uint16_t kill_pwm[] = {0, 0, 0, 0};
 
 const float stablize_targets[] = {0.0, 0.0, 0.0};
 
+#define W	0.5
+#define KROLL	1
+#define KPITCH	1
+#define KYAW	1
+#define COPTER_MASS 540
+
+
+#define	PWM_TO_FORCE(pwm)	((1.774487006 * pwm) + 12.12438228)
+#define	FORCE_TO_PWM(force)	((0.5617907179 * force) + -6.707191437)
+
+typedef struct {
+	float RF;
+	float RB;
+	float LB;
+	float LF;
+}	motor_pwm_t;
+
+typedef struct {
+	float pitch;
+	float roll;
+	float yaw;
+}	angles_t;
+
 
 PID_Controller pitch_displacement;
 PID_Controller roll_displacement;
@@ -43,16 +66,27 @@ PID_Controller yaw_velocity;
 // Controller_Constants ang_v_stab_roll[] = {2.2, 0.00, 0.000};
 // Controller_Constants ang_v_stab_yaw[] = {1.0, 0.00, 0.0};
 
-Controller_Constants ang_d_stab_pitch[] = {2.3, 0.0, 0.0};
-Controller_Constants ang_d_stab_roll[] = {2.3, 0.000, 0.0};
-Controller_Constants ang_d_stab_yaw[] = {1.4, 0.000, 0.0};
+Controller_Constants ang_d_stab_pitch = {2.3, 0.0, 0.0};
+Controller_Constants ang_d_stab_roll = {2.3, 0.000, 0.0};
+Controller_Constants ang_d_stab_yaw = {1.4, 0.000, 0.0};
 
-Controller_Constants ang_v_stab_pitch[] = {1.4, 0.0, 0.000};
-Controller_Constants ang_v_stab_roll[] = {1.4, 0.00, 0.000};
-Controller_Constants ang_v_stab_yaw[] = {1.0, 0.00, 0.0};
+Controller_Constants ang_v_stab_pitch = {1.4, 0.0, 0.000};
+Controller_Constants ang_v_stab_roll = {1.4, 0.00, 0.000};
+Controller_Constants ang_v_stab_yaw = {1.0, 0.00, 0.0};
 
 
 uint16_t current_pwm[] = {0, 0, 0, 0};
+
+void get_target_pwm(motor_pwm_t* new_pwm, angles_t* error_v, angles_t* error_d){
+	float roll = KROLL*(error_d->roll + error_v->roll);
+	float pitch = KPITCH*(error_d->pitch + error_v->pitch);
+	float yaw = KYAW*(error_d->yaw + error_v->yaw);
+	new_pwm->RF =	-roll	-	pitch 	+	yaw;
+	new_pwm->RB =	-roll 	+	pitch 	-	yaw;
+	new_pwm->LB =	roll 	+	pitch 	+	yaw;
+	new_pwm->LF =	roll	-	pitch 	-	yaw;
+	return;
+}
 
 void init_sensors(){
 	init_accel();
@@ -82,34 +116,34 @@ void init_sensors(){
 
 
 void init_flight_controller() {
-	init_controller(&pitch_displacement, ang_d_stab_pitch, 0.004, 50);
+	init_controller(&pitch_displacement, &ang_d_stab_pitch, 0.004, 50);
 	update_target(&pitch_displacement, 0);
 
 	
-	init_controller(&roll_displacement, ang_d_stab_roll, 0.004, 30);
+	init_controller(&roll_displacement, &ang_d_stab_roll, 0.004, 30);
 	update_target(&roll_displacement, 0);
 
 	
-	init_controller(&yaw_displacement, ang_d_stab_yaw, 0.004, 30);
+	init_controller(&yaw_displacement, &ang_d_stab_yaw, 0.004, 30);
 	update_target(&yaw_displacement, 0);
 
 	
-	init_controller(&pitch_velocity, ang_v_stab_pitch, 0.004, 30);
+	init_controller(&pitch_velocity, &ang_v_stab_pitch, 0.004, 30);
 	update_target(&pitch_velocity, 0);
 
 	
-	init_controller(&roll_velocity, ang_v_stab_roll, 0.004, 20);
+	init_controller(&roll_velocity, &ang_v_stab_roll, 0.004, 20);
 	update_target(&roll_velocity, 0);
 
 	
-	init_controller(&yaw_velocity, ang_v_stab_yaw, 0.004, 10);
+	init_controller(&yaw_velocity, &ang_v_stab_yaw, 0.004, 10);
 	update_target(&yaw_velocity, 0);
   
   printf("Flight controller initialized!\n");
 	return;
 }
 
-void spam_pwm(uint16_t spam[4]) {
+void spam_pwm(const uint16_t spam[4]) {
 	for(int i = 0; i < 50; i++){
 	    pwm_update_duty_cycle(spam);
 	    nrf_delay_ms(2);
@@ -123,7 +157,6 @@ void spam_pwm(uint16_t spam[4]) {
 
 void arm() {
 	//start sensors
-printf("a");	
 	init_sensors();
 
 
@@ -148,7 +181,7 @@ void kill() {
 	return;
 }
 
-void update_ang_d(float ang_d[3]) {
+void update_ang_d(const float ang_d[3]) {
 	update_target(&pitch_displacement, ang_d[0]);
 	update_target(&roll_displacement, ang_d[1]);
 	update_target(&yaw_displacement, ang_d[2]);
@@ -171,18 +204,6 @@ void stablize(){
 	update_ang_d(stablize_targets);
 }
 
-typedef struct {
-	float RF;
-	float RB;
-	float LB;
-	float LF;
-}	motor_pwm_t;
-
-typedef struct {
-	float pitch;
-	float roll;
-	float yaw;
-}	angles_t;
 
 #define	PWM_MIN	115
 #define	PWM_MAX	270
@@ -214,27 +235,6 @@ void fly() {
 	pwm_update_duty_cycle(current_pwm);
 	return;
 }
-
-#define W	0.5
-#define KROLL	1
-#define KPITCH	1
-#define KYAW	1
-#define COPTER_MASS 540
-
-
-void get_target_pwm(motor_pwm_t* new_pwm, angles_t* error_v, angles_t* error_d){
-	float roll = KROLL*(error_d->roll + error_v->roll);
-	float pitch = KPITCH*(error_d->pitch + error_v->pitch);
-	float yaw = KYAW*(error_d->yaw + error_v->yaw);
-	new_pwm->RF =	-roll	-	pitch 	+	yaw;
-	new_pwm->RB =	-roll 	+	pitch 	-	yaw;
-	new_pwm->LB =	roll 	+	pitch 	+	yaw;
-	new_pwm->LF =	roll	-	pitch 	-	yaw;
-	return;
-}
-
-#define	PWM_TO_FORCE(pwm)	((1.774487006 * pwm) + 12.12438228)
-#define	FORCE_TO_PWM(force)	((0.5617907179 * force) + -6.707191437)
 
 void get_include_z_pwm(motor_pwm_t* add_z) {
 	float rf_f = PWM_TO_FORCE(add_z->RF);
