@@ -17,7 +17,7 @@ if len(addr) != 17:
 DISPLAY_SERVICE_UUID = "62295813-af1c-3eb5-4a07-c92f9053c5c5"
 DISPLAY_CHAR_UUID    = "6229108a-af1c-3eb5-4a07-c92f9053c5c5"
 
-class BLEAction(enum.Enum):
+class BLEAction(enum.IntEnum):
     NONE = 0
     RLEFT = 1
     RRIGHT = 2
@@ -246,7 +246,7 @@ try:
         current_state_int = int(current_state)
         ch.write(current_state_int.to_bytes(4, "little"))
         print(current_state)
-        root.after(100, send_current_state)
+        root.after(200, send_current_state)
 
     send_current_state()
     root.mainloop()
