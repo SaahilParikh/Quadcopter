@@ -213,11 +213,37 @@ void fly() {
 	return;
 }
 
+void fly_w_o_sensorget() {
+	float u_ang_v[3];
+	float u_ang_d[3];
+	float output_pwm[4];
+
+	get_u_ang_v(u_ang_v, u_ang_d);
+	get_target_pwm(output_pwm, u_ang_v, u_ang_d);
+	get_include_z_pwm(output_pwm);
+
+	current_pwm[0] = ((uint16_t) round(output_pwm[0]) + PWM_MIN) > PWM_MAX ? PWM_MAX : (uint16_t) round(output_pwm[0]) + PWM_MIN;
+	current_pwm[1] = ((uint16_t) round(output_pwm[1]) + PWM_MIN) > PWM_MAX ? PWM_MAX : (uint16_t) round(output_pwm[1]) + PWM_MIN;
+	current_pwm[2] = ((uint16_t) round(output_pwm[2]) + PWM_MIN) > PWM_MAX ? PWM_MAX : (uint16_t) round(output_pwm[2]) + PWM_MIN;
+	current_pwm[3] = ((uint16_t) round(output_pwm[3]) + PWM_MIN) > PWM_MAX ? PWM_MAX : (uint16_t) round(output_pwm[3]) + PWM_MIN;
+
+	//  printf("gd(%f, %f, %f)\t", gyro_d.x_axis, gyro_d.y_axis, gyro_d.z_axis);
+	// // // printf("gd(%f)\t", pitch_velocity.integral);
+	// // // //printf("gd(%f, %f, %f, %f)\t", output_pwm[3], output_pwm[2], output_pwm[1], output_pwm[0]);
+	// // // // printf("gv(%f, %f, %f)\t", gyro_v.x_axis, gyro_v.y_axis, gyro_v.z_axis);
+	//   printf("a(%f, %f, %f)\t", accel_d.theta, accel_d.psi, accel_d.phi);
+	// // // printf("m(%f, %f, %f)\t", mag_d.roll, mag_d.pitch, mag_d.yaw);
+	//  printf("d(%u, %u, %u, %u)\n", current_pwm[3], current_pwm[2], current_pwm[1], current_pwm[0]);
+
+
+	pwm_update_duty_cycle(current_pwm);
+}
+
 #define W	0.5
 #define KROLL	1
 #define KPITCH	1
 #define KYAW	1
-#define COPTER_MASS 540
+#define COPTER_MASS 570
 
 
 void get_target_pwm(motor_pwm_t* new_pwm, angles_t* error_v, angles_t* error_d){

@@ -15,6 +15,7 @@ lsm9ds1_measurement_t gyro_d;
 // END OF SENSORS SET UP
 
 #define pwm_update_rate 2
+float COPTER_MASS;
 
 extern PID_Controller pitch_displacement;
 extern PID_Controller roll_displacement;
@@ -29,3 +30,4 @@ void init_flight_controller(void);
 void arm(void);
 void fly(void);
 void kill(void);
+void fly_w_o_sensorget(void);

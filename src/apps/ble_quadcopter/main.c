@@ -54,49 +54,67 @@ int main(void) {
   init_ble();
 
   bool sensors_initialized = false;
+  bool flying = false;
+  COPTER_MASS = 470;
+
+  update_target(&pitch_displacement, 0);
+	update_target(&roll_displacement, 0);
+	update_target(&yaw_displacement, 0);
 
   while(1) {
     if (sensors_initialized) {
       get_orientation(&current_orient);
     }
+    if (flying) {
+      	fly_w_o_sensorget();
+    }
     enum Buttons b = button_state;
     switch (b) {
       case NONE:
-        update_target(&pitch_displacement, 0);
-        update_target(&roll_displacement, 0);
-        update_target(&yaw_displacement, 0);
+        
       break;
       case RLEFT:
-        update_target(&pitch_displacement, 0);
-        update_target(&roll_displacement, 5);
-        update_target(&yaw_displacement, 0);
+      if (prev_state == NONE) {
+        update_target(&roll_displacement, roll_displacement.target + 5);
+    	}
+        
       break;
       case RRIGHT:
-        update_target(&pitch_displacement, 0);
-        update_target(&roll_displacement, -5);
-        update_target(&yaw_displacement, 0);
+         if (prev_state == NONE) {
+        update_target(&roll_displacement, roll_displacement.target + -5);
+    	}
+
       break;
       case PFWD:
-        update_target(&pitch_displacement, 5);
-        update_target(&roll_displacement, 0);
-        update_target(&yaw_displacement, 0);
+         if (prev_state == NONE) {
+        update_target(&pitch_displacement, pitch_displacement.target + 5);
+    	}
       break;
       case PBACK:
-        update_target(&pitch_displacement, -5);
-        update_target(&roll_displacement, 0);
-        update_target(&yaw_displacement, 0);
+        if (prev_state == NONE) {
+        update_target(&pitch_displacement, pitch_displacement.target - 5);
+    	}
       break;
       case YLEFT:
-      //TODO
+      if (prev_state == NONE) {
+        update_target(&yaw_displacement, yaw_displacement.target + 10);
+    	}
       break;
       case YRIGHT:
-      //TODO
+      if (prev_state == NONE) {
+        update_target(&yaw_displacement, yaw_displacement.target - 10);
+      }
       break;
       case ALTUP:
-      //TODO
+      	if (prev_state == NONE) {
+          COPTER_MASS += 10.0;
+        }
+      	
       break;
       case ALTDOWN:
-      //TODO
+      	if (prev_state == NONE) {
+          COPTER_MASS -= 10.0;
+        }
       break;
       case ARM:
         if (prev_state == NONE) {
@@ -110,7 +128,12 @@ int main(void) {
         }
       break;
       case KILL:
-      	kill();
+      	if (prev_state == NONE) {
+      		if (flying) {
+      			kill();
+      		}
+      		flying = !flying;
+      	}
       break;
     }
     nrf_delay_ms(1);

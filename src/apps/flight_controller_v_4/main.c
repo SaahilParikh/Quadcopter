@@ -56,7 +56,7 @@ int main (void) {
 
 
 
-  for(int i = 0; i < 5000; i++){
+  for(int i = 0; i < 7000; i++){
      fly();
      nrf_delay_us(500);
    }

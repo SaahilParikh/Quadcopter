@@ -127,6 +127,8 @@ def end_kill(_=None):
     global current_state
     current_state = BLEAction.NONE
 
+# buckler = Peripheral(addr)
+
 try:
     print("connecting")
     buckler = Peripheral(addr)
