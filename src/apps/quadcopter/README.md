@@ -1,3 +1,0 @@
-Bluetooth Quadcopter
-=====
-Bluetooth Quadcopter
